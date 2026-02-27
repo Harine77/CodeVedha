@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeGuru AI — Code Analysis Tutor</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #00ff88;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --glow: 0 0 20px rgba(0,255,136,0.3);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0 32px; border-bottom: 1px solid var(--border);
+    margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; box-shadow: var(--glow);
+  }
+  .logo-text { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+  .logo-text span { color: var(--accent); }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 1px; margin-top: 2px; }
+  .header-controls { display: flex; gap: 10px; align-items: center; }
+  .lang-toggle { display: flex; gap: 6px; }
+  .btn {
+    font-family: 'Space Mono', monospace; font-size: 12px;
+    padding: 10px 18px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text);
+    border-radius: 8px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,255,136,0.2); }
+  .btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+  .btn-primary {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+    font-weight: 700; font-size: 13px; padding: 12px 28px;
+  }
+  .btn-primary:hover { background: transparent; color: var(--accent); box-shadow: var(--glow); }
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .panel-header {
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2);
+  }
+  .panel-title {
+    font-size: 12px; font-family: 'Space Mono', monospace; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 8px var(--accent); animation: pulse 2s infinite; display: inline-block;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .panel-body { padding: 20px; }
+  #codeInput {
+    width: 100%; height: 280px; background: #0d0d15;
+    border: 1px solid var(--border); border-radius: 10px;
+    color: #a8ff78; font-family: 'Space Mono', monospace;
+    font-size: 13px; line-height: 1.7; padding: 16px;
+    resize: vertical; outline: none; transition: border-color 0.2s;
+  }
+  #codeInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,255,136,0.1); }
+  .editor-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+  .lang-hint { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+  .analyzing { display: none; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent); }
+  .analyzing.show { display: flex; }
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid rgba(0,255,136,0.2);
+    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .complexity-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,255,136,0.1); border: 1px solid var(--accent);
+    color: var(--accent); font-family: 'Space Mono', monospace;
+    font-size: 20px; font-weight: 700; padding: 12px 20px;
+    border-radius: 10px; margin-bottom: 14px; box-shadow: var(--glow);
+  }
+  .analysis-section { margin-bottom: 16px; }
+  .section-label { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .section-content { font-size: 14px; line-height: 1.6; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .tip-content { border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.07); color: #ffa07a; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 13px; line-height: 1.8; }
+  .empty-state .big { font-size: 36px; margin-bottom: 12px; }
+  .chart-panel { grid-column: 1 / -1; }
+  .chart-wrap { height: 260px; position: relative; }
+  .interview-panel { grid-column: 1 / -1; }
+  .questions-list { display: none; flex-direction: column; gap: 12px; margin-top: 16px; }
+  .questions-list.visible { display: flex; }
+  .question-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3); border-radius: 8px;
+    padding: 14px 16px; font-size: 14px; line-height: 1.6;
+    animation: slideIn 0.3s ease forwards; opacity: 0; transform: translateY(10px);
+  }
+  .question-card:nth-child(2) { animation-delay: 0.1s; }
+  .question-card:nth-child(3) { animation-delay: 0.2s; }
+  @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
+  .question-num { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent3); margin-bottom: 6px; letter-spacing: 1px; }
+  .complexity-grade { display: flex; gap: 6px; margin-top: 8px; margin-bottom: 4px; }
+  .grade-box { flex: 1; height: 6px; border-radius: 3px; background: var(--border); }
+  .grade-box.on   { background: var(--accent); }
+  .grade-box.warn { background: var(--accent2); }
+  .grade-box.bad  { background: #ff3333; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Code<span>Guru</span> AI</div>
+        <div class="logo-sub">CODE ANALYSIS TUTOR</div>
+      </div>
+    </div>
+    <div class="header-controls">
+      <div class="lang-toggle">
+        <button class="btn active" id="btnEN">EN</button>
+        <button class="btn" id="btnTA">தமிழ்</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Code Editor -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="dot"></span> CODE EDITOR</div>
+        <span class="lang-hint" id="langHint">// paste your code here</span>
+      </div>
+      <div class="panel-body">
+        <textarea id="codeInput" placeholder="// Paste your code here...
+// Example with O(n²):
+for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+        console.log(i, j);
+    }
+}"></textarea>
+        <div class="editor-footer">
+          <div class="analyzing" id="analyzing">
+            <div class="spinner"></div>
+            <span id="analyzingText">Analyzing...</span>
+          </div>
+          <div></div>
+          <button class="btn btn-primary" id="analyzeBtn">&#9654; ANALYZE CODE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Result -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="dot"></span> ANALYSIS RESULT</div>
+      </div>
+      <div class="panel-body" id="resultPanel">
+        <div class="empty-state">
+          <div class="big">&#128269;</div>
+          <span>Paste your code and click<br>ANALYZE CODE to begin</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="panel chart-panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="dot"></span> COMPLEXITY VISUALIZER</div>
+        <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">Big-O Growth Curves</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap">
+          <canvas id="complexityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interview -->
+    <div class="panel interview-panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="dot"></span> INTERVIEW MODE</div>
+        <button class="btn" id="interviewBtn">SHOW QUESTIONS</button>
+      </div>
+      <div class="panel-body">
+        <p id="interviewIntro" style="font-size:14px;color:var(--muted);font-family:'Space Mono',monospace;">
+          Click "SHOW QUESTIONS" to get 3 sample interview questions about time complexity.
+        </p>
+        <div class="questions-list" id="questionsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ── Language Data ──────────────────────────────────────────────
+  var T = {
+    en: {
+      langHint: "// paste your code here",
+      analyzing: "Analyzing...",
+      emptyMsg: "Paste your code and click<br>ANALYZE CODE to begin",
+      explainLabel: "EXPLANATION",
+      tipLabel: "OPTIMIZATION TIP",
+      interviewIntro: "Click \"SHOW QUESTIONS\" to get 3 sample interview questions about time complexity.",
+      showQ: "SHOW QUESTIONS",
+      hideQ: "HIDE QUESTIONS",
+      questions: {
+        on2: [
+          { q: "Why is O(n\u00B2) problematic for large inputs?",              a: "With n=10,000 you get 100 million operations \u2014 it scales very poorly." },
+          { q: "How would you optimize a nested loop comparing all pairs?",    a: "Sort first, then use two pointers or a hash map to reach O(n log n) or O(n)." },
+          { q: "What data structure can eliminate the inner loop?",            a: "A hash map gives O(1) lookup, removing the need for the inner loop entirely." }
+        ],
+        on: [
+          { q: "What does O(n) mean in terms of performance?",                a: "Runtime grows linearly \u2014 doubling input roughly doubles the time. Generally efficient." },
+          { q: "Give an example of an O(n) algorithm.",                       a: "Linear search through an unsorted array, or summing all elements in a list." },
+          { q: "Can a single loop ever be worse than O(n)?",                  a: "Yes \u2014 if the loop body does non-constant work, the total could be O(n\u00B2) or more." }
+        ],
+        ologn: [
+          { q: "Why is O(log n) so efficient?",                               a: "Each step halves the problem. For n=1,000,000 you only need about 20 steps." },
+          { q: "What algorithm commonly runs in O(log n)?",                   a: "Binary search on a sorted array halves the search space each iteration." },
+          { q: "What data structure supports O(log n) insert and search?",    a: "A balanced Binary Search Tree (BST) or a heap provides O(log n) operations." }
+        ],
+        o1: [
+          { q: "What is O(1) complexity?",                                    a: "Constant time \u2014 the operation takes the same time regardless of input size." },
+          { q: "Give 3 examples of O(1) operations.",                         a: "Array index access, hash map lookup, and stack push/pop." },
+          { q: "Is O(1) always the best? Why or why not?",                   a: "Usually yes for time, but O(1) structures like hash maps use more memory \u2014 tradeoffs exist." }
+        ]
+      },
+      complexities: {
+        on2:  { label: "O(n\u00B2) \u2014 Quadratic",    explain: "Your code has nested loops. For each element, all others are processed \u2014 that is n\u00D7n = n\u00B2 operations. Fine for small inputs, but scales very poorly.", tip: "Consider a hash map or sorting to reduce to O(n log n) or O(n). Often the inner loop can be removed with preprocessing." },
+        on:   { label: "O(n) \u2014 Linear",             explain: "Your code has a single loop iterating through elements once. Efficient \u2014 doubling input roughly doubles the time. Linear time is generally considered good.", tip: "Good work! Check whether binary search or hash lookups could bring some operations down to O(log n)." },
+        ologn:{ label: "O(log n) \u2014 Logarithmic",    explain: "Excellent! Your code uses divide-and-conquer or halving logic. The problem is split in half each step \u2014 even huge inputs are handled very fast.", tip: "Already highly efficient! Just ensure your base case is correct and the halving logic is consistent." },
+        o1:   { label: "O(1) \u2014 Constant",           explain: "No loops detected! Your code runs in constant time \u2014 the same amount of work regardless of input size. This is the best possible complexity.", tip: "Perfect complexity! Just make sure built-in functions you call are not secretly doing O(n) work under the hood." }
+      }
+    },
+    ta: {
+      langHint: "// \u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BCB\u0B9F\u0BC8 \u0B87\u0B99\u0BCD\u0B95\u0BC7 \u0B92\u0B9F\u0BCD\u0B9F\u0BB5\u0BC1\u0BAE\u0BCD",
+      analyzing: "\u0BAA\u0B95\u0BC1\u0BAA\u0BCD\u0BAA\u0BBE\u0BAF\u0BCD\u0BB5\u0BC1 \u0B9A\u0BC6\u0BAF\u0BCD\u0B95\u0BBF\u0BB1\u0BA4\u0BC1...",
+      emptyMsg: "\u0B95\u0BCB\u0B9F\u0BC8 \u0B92\u0B9F\u0BCD\u0B9F\u0BBF ANALYZE CODE \u0B85\u0BB4\u0BC1\u0BA4\u0BCD\u0BA4\u0BB5\u0BC1\u0BAE\u0BCD",
+      explainLabel: "\u0BB5\u0BBF\u0BB3\u0B95\u0BCD\u0B95\u0BAE\u0BCD",
+      tipLabel: "\u0BAE\u0BC7\u0BAE\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BB2\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1",
+      interviewIntro: "\"SHOW QUESTIONS\" \u0B85\u0BB4\u0BC1\u0BA4\u0BCD\u0BA4\u0BBF 3 \u0BA8\u0BC7\u0BB0\u0BCD\u0B95\u0BBE\u0BA3\u0BB2\u0BCD \u0B95\u0BC7\u0BB3\u0BCD\u0BB5\u0BBF\u0B95\u0BB3\u0BCD \u0BAA\u0BC6\u0BB1\u0BB5\u0BC1\u0BAE\u0BCD.",
+      showQ: "SHOW QUESTIONS",
+      hideQ: "HIDE QUESTIONS",
+      questions: {
+        on2: [
+          { q: "O(n\u00B2) \u0B8F\u0BA9\u0BCD \u0BAA\u0BC6\u0BB0\u0BBF\u0BAF inputs\u0B95\u0BCD\u0B95\u0BC1 \u0BAA\u0BBF\u0BB0\u0B9A\u0BCD\u0B9A\u0BBF\u0BA9\u0BC8\u0BAF\u0BBE\u0B95\u0BC1\u0BAE\u0BCD?",          a: "n=10,000 \u0B8E\u0BA9\u0BCD\u0BB1\u0BBE\u0BB2\u0BCD 100 \u0BAE\u0BBF\u0BB2\u0BCD\u0BB2\u0BBF\u0BAF\u0BA9\u0BCD \u0B9A\u0BC6\u0BAF\u0BB2\u0BCD\u0BAA\u0BBE\u0B9F\u0BC1\u0B95\u0BB3\u0BCD \u2014 \u0BAE\u0BBF\u0B95\u0BB5\u0BC1\u0BAE\u0BCD \u0BAE\u0BC6\u0BA4\u0BC1\u0BB5\u0BBE\u0B95\u0BC1\u0BAE\u0BCD." },
+          { q: "Nested loop-\u0B90 \u0B8E\u0BB5\u0BCD\u0BB5\u0BBE\u0BB1\u0BC1 \u0BAE\u0BC7\u0BAE\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BB2\u0BBE\u0BAE\u0BCD?",                                                a: "\u0BAE\u0BC1\u0BA4\u0BB2\u0BBF\u0BB2\u0BCD sort \u0B9A\u0BC6\u0BAF\u0BA4\u0BC1, two pointers \u0B85\u0BB2\u0BCD\u0BB2\u0BA4\u0BC1 hash map \u0BAA\u0BAF\u0BA9\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BBF O(n) \u0B86\u0B95\u0BCD\u0B95\u0BB2\u0BBE\u0BAE\u0BCD." },
+          { q: "Inner loop-\u0B90 \u0BA8\u0BC0\u0B95\u0BCD\u0B95 \u0B8E\u0BA8\u0BCD\u0BA4 data structure \u0B89\u0BA4\u0BB5\u0BC1\u0BAE\u0BCD?",                                                                     a: "Hash map O(1) lookup \u0BA4\u0BB0\u0BC1\u0BB5\u0BA4\u0BBE\u0BB2\u0BCD inner loop \u0BA4\u0BC7\u0BB5\u0BC8\u0BAF\u0BBF\u0BB2\u0BCD\u0BB2\u0BBE\u0BAE\u0BB2\u0BCD \u0BAA\u0BCB\u0B95\u0BC1\u0BAE\u0BCD." }
+        ],
+        on: [
+          { q: "O(n) \u0B8E\u0BA9\u0BCD\u0BAA\u0BA4\u0BA9\u0BCD \u0B85\u0BB0\u0BCD\u0BA4\u0BCD\u0BA4\u0BAE\u0BCD \u0B8E\u0BA9\u0BCD\u0BA9?",                                                                        a: "\u0BA8\u0BC7\u0BB0\u0BAE\u0BCD \u0BA8\u0BC7\u0BB0\u0BBF\u0BAF\u0BB2\u0BCD \u0BB5\u0BB3\u0BB0\u0BCD\u0B9A\u0BCD\u0B9A\u0BBF \u2014 input \u0B87\u0BB0\u0B9F\u0BCD\u0B9F\u0BBF\u0BAA\u0BCD\u0BAA\u0BBE\u0BA9\u0BBE\u0BB2\u0BCD \u0BA8\u0BC7\u0BB0\u0BAE\u0BC1\u0BAE\u0BCD \u0B87\u0BB0\u0B9F\u0BCD\u0B9F\u0BBF\u0BAA\u0BCD\u0BAA\u0BBE\u0B95\u0BC1\u0BAE\u0BCD." },
+          { q: "O(n) algorithm-\u0B95\u0BCD\u0B95\u0BC1 \u0B92\u0BB0\u0BC1 \u0B89\u0BA4\u0BBE\u0BB0\u0BA3\u0BAE\u0BCD \u0B95\u0BCA\u0B9F\u0BC1\u0B99\u0BCD\u0B95\u0BB3\u0BCD.",                                   a: "Unsorted array-\u0BB2\u0BCD linear search, \u0B8E\u0BB2\u0BCD\u0BB2\u0BBE elements-\u0B90\u0BAF\u0BC1\u0BAE\u0BCD \u0B95\u0BC2\u0B9F\u0BCD\u0B9F\u0BC1\u0BA4\u0BB2\u0BCD." },
+          { q: "\u0B92\u0BB0\u0BC1 loop O(n)-\u0B90 \u0BB5\u0BBF\u0B9F \u0BAE\u0BCB\u0B9A\u0BAE\u0BBE\u0B95 \u0B87\u0BB0\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BBE?",                                             a: "\u0B86\u0BAE\u0BCD, loop-\u0B95\u0BCD\u0B95\u0BC1\u0BB3\u0BCD constant \u0B87\u0BB2\u0BCD\u0BB2\u0BBE\u0BA4 \u0BB5\u0BC7\u0BB2\u0BC8 \u0B87\u0BB0\u0BC1\u0BA8\u0BCD\u0BA4\u0BBE\u0BB2\u0BCD \u0BAE\u0BCA\u0BA4\u0BCD\u0BA4\u0BAE\u0BCD O(n\u00B2) \u0B86\u0B95\u0BB2\u0BBE\u0BAE\u0BCD." }
+        ],
+        ologn: [
+          { q: "O(log n) \u0B8F\u0BA9\u0BCD \u0BAE\u0BBF\u0B95\u0BB5\u0BC1\u0BAE\u0BCD \u0BA4\u0BBF\u0BB1\u0BAE\u0BC8\u0BAF\u0BBE\u0BA9\u0BA4\u0BC1?",                                                             a: "\u0B92\u0BB5\u0BCD\u0BB5\u0BCA\u0BB0\u0BC1 \u0BAA\u0B9F\u0BBF\u0BAF\u0BC1\u0BAE\u0BCD \u0BAA\u0BBF\u0BB0\u0B9A\u0BCD\u0B9A\u0BBF\u0BA9\u0BC8 \u0BAA\u0BBE\u0BA4\u0BBF\u0BAF\u0BBE\u0B95\u0BCD\u0B95\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1. n=1M \u0B95\u0BCD\u0B95\u0BC1 ~20 \u0BAA\u0B9F\u0BBF\u0B95\u0BB3\u0BCD \u0BAE\u0B9F\u0BCD\u0B9F\u0BC1\u0BAE\u0BC7." },
+          { q: "O(log n)-\u0BB2\u0BCD \u0B87\u0BAF\u0B99\u0BCD\u0B95\u0BC1\u0BAE\u0BCD algorithm \u0B8E\u0BA4\u0BC1?",                                                                                               a: "Sorted array-\u0BB2\u0BCD binary search \u0B92\u0BB5\u0BCD\u0BB5\u0BCA\u0BB0\u0BC1 step-\u0BB2\u0BC1\u0BAE\u0BCD \u0BA4\u0BC7\u0B9F\u0BB2\u0BCD \u0B87\u0B9F\u0BA4\u0BCD\u0BA4\u0BC8 \u0BAA\u0BBE\u0BA4\u0BBF\u0BAF\u0BBE\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD." },
+          { q: "O(log n) insert/search \u0B86\u0BA4\u0BB0\u0BBF\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD data structure \u0B8E\u0BA4\u0BC1?",                                                                             a: "Balanced BST \u0B85\u0BB2\u0BCD\u0BB2\u0BA4\u0BC1 heap." }
+        ],
+        o1: [
+          { q: "O(1) complexity \u0B8E\u0BA9\u0BCD\u0BB1\u0BBE\u0BB2\u0BCD \u0B8E\u0BA9\u0BCD\u0BA9?",                                                                                                             a: "Constant time \u2014 input \u0B8E\u0BB5\u0BCD\u0BB5\u0BB3\u0BB5\u0BC1 \u0B87\u0BB0\u0BC1\u0BA8\u0BCD\u0BA4\u0BBE\u0BB2\u0BC1\u0BAE\u0BCD \u0B92\u0BB0\u0BC7 \u0BA8\u0BC7\u0BB0\u0BAE\u0BCD \u0B8E\u0B9F\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD." },
+          { q: "O(1) operations-\u0B95\u0BCD\u0B95\u0BC1 3 \u0B89\u0BA4\u0BBE\u0BB0\u0BA3\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BCA\u0B9F\u0BC1\u0B99\u0BCD\u0B95\u0BB3\u0BCD.",                                a: "Array index access, hash map lookup, stack push/pop." },
+          { q: "O(1) \u0B8E\u0BAA\u0BCD\u0BAA\u0BCB\u0BA4\u0BC1\u0BAE\u0BCD \u0B9A\u0BBF\u0BB1\u0BA8\u0BCD\u0BA4\u0BA4\u0BBE?",                                                                                   a: "\u0BAA\u0BCA\u0BA4\u0BC1\u0BB5\u0BBE\u0B95 \u0B86\u0BAE\u0BCD, \u0B86\u0BA9\u0BBE\u0BB2\u0BCD hash maps \u0B85\u0BA4\u0BBF\u0B95 memory \u0BAA\u0BAF\u0BA9\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0BAE\u0BCD." }
+        ]
+      },
+      complexities: {
+        on2:  { label: "O(n\u00B2) \u2014 \u0B87\u0BB0\u0BC1\u0BAA\u0B9F\u0BBF",  explain: "\u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BCB\u0B9F\u0BBF\u0BB2\u0BCD nested loops \u0B89\u0BB3\u0BCD\u0BB3\u0BA9. \u0B92\u0BB5\u0BCD\u0BB5\u0BCA\u0BB0\u0BC1 element-\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1 \u0B8E\u0BB2\u0BCD\u0BB2\u0BBE\u0BB5\u0BB1\u0BCD\u0BB1\u0BC8\u0BAF\u0BC1\u0BAE\u0BCD \u0B9A\u0BC6\u0BAF\u0BB2\u0BBE\u0B95\u0BCD\u0B95\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1. \u0B9A\u0BBF\u0BB1\u0BBF\u0BAF inputs-\u0B95\u0BCD\u0B95\u0BC1 \u0B9A\u0BB0\u0BBF, \u0BAA\u0BC6\u0BB0\u0BBF\u0BAF\u0BB5\u0BB1\u0BCD\u0BB1\u0BBF\u0BB1\u0BCD\u0B95\u0BC1 \u0BAE\u0BC6\u0BA4\u0BC1\u0BB5\u0BBE\u0B95\u0BC1\u0BAE\u0BCD.",    tip: "Hash map \u0B85\u0BB2\u0BCD\u0BB2\u0BA4\u0BC1 sorting \u0BAA\u0BAF\u0BA9\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BBF O(n log n) \u0B85\u0BB2\u0BCD\u0BB2\u0BA4\u0BC1 O(n) \u0B86\u0B95 \u0B95\u0BC1\u0BB1\u0BC8\u0B95\u0BCD\u0B95\u0BB2\u0BBE\u0BAE\u0BCD." },
+        on:   { label: "O(n) \u2014 \u0BA8\u0BC7\u0BB0\u0BBF\u0BAF\u0BB2\u0BCD",  explain: "\u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BCB\u0B9F\u0BBF\u0BB2\u0BCD \u0B92\u0BB0\u0BC1 loop \u0BAE\u0B9F\u0BCD\u0B9F\u0BC1\u0BAE\u0BC7 \u0B89\u0BB3\u0BCD\u0BB3\u0BA4\u0BC1. \u0BA4\u0BBF\u0BB1\u0BAE\u0BC8\u0BAF\u0BBE\u0BA9\u0BA4\u0BC1 \u2014 input \u0B87\u0BB0\u0B9F\u0BCD\u0B9F\u0BBF\u0BAA\u0BCD\u0BAA\u0BBE\u0BA9\u0BBE\u0BB2\u0BCD \u0BA8\u0BC7\u0BB0\u0BAE\u0BC1\u0BAE\u0BCD \u0B87\u0BB0\u0B9F\u0BCD\u0B9F\u0BBF\u0BAA\u0BCD\u0BAA\u0BBE\u0B95\u0BC1\u0BAE\u0BCD.",    tip: "\u0BA8\u0BB2\u0BCD\u0BB2 \u0BB5\u0BC7\u0BB2\u0BC8! Binary search \u0BAE\u0BC2\u0BB2\u0BAE\u0BCD O(log n) \u0B86\u0B95 \u0B95\u0BC1\u0BB1\u0BC8\u0B95\u0BCD\u0B95\u0BB2\u0BBE\u0BAE\u0BCD." },
+        ologn:{ label: "O(log n) \u2014 \u0BAE\u0B9F\u0B95\u0BCD\u0B95\u0BC8",   explain: "\u0B9A\u0BBF\u0BB1\u0BAA\u0BCD\u0BAA\u0BC1! \u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BCB\u0B9F\u0BC1 divide-and-conquer logic \u0BAA\u0BAF\u0BA9\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1. \u0B92\u0BB5\u0BCD\u0BB5\u0BCA\u0BB0\u0BC1 \u0BAA\u0B9F\u0BBF\u0BAF\u0BC1\u0BAE\u0BCD \u0BAA\u0BBF\u0BB0\u0B9A\u0BCD\u0B9A\u0BBF\u0BA9\u0BC8 \u0BAA\u0BBE\u0BA4\u0BBF\u0BAF\u0BBE\u0B95\u0BCD\u0B95\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1.",      tip: "\u0B8F\u0BB1\u0BCD\u0B95\u0BA9\u0BB5\u0BC7 \u0BAE\u0BBF\u0B95\u0BB5\u0BC1\u0BAE\u0BCD \u0BA4\u0BBF\u0BB1\u0BAE\u0BC8\u0BAF\u0BBE\u0BA9\u0BA4\u0BC1. Base case \u0B9A\u0BB0\u0BBF\u0BAF\u0BBE\u0B95 \u0B89\u0BB3\u0BCD\u0BB3\u0BA4\u0BBE \u0B8E\u0BA9\u0BCD\u0BB1\u0BC1 \u0B9A\u0BB0\u0BBF\u0BAA\u0BBE\u0BB0\u0BCD\u0B95\u0BCD\u0B95\u0BB5\u0BC1\u0BAE\u0BCD." },
+        o1:   { label: "O(1) \u2014 \u0BAE\u0BBE\u0BB1\u0BBF\u0BB2\u0BBF",       explain: "Loops \u0B87\u0BB2\u0BCD\u0BB2\u0BC8! \u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BCB\u0B9F\u0BC1 \u0BAE\u0BBE\u0BB1\u0BBF\u0BB2\u0BBF \u0BA8\u0BC7\u0BB0\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0B87\u0BAF\u0B99\u0BCD\u0B95\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1. Input size \u0B8E\u0BB5\u0BCD\u0BB5\u0BB3\u0BB5\u0BC1 \u0B87\u0BB0\u0BC1\u0BA8\u0BCD\u0BA4\u0BBE\u0BB2\u0BC1\u0BAE\u0BCD \u0B92\u0BB0\u0BC7 \u0B85\u0BB3\u0BB5\u0BC1 \u0BB5\u0BC7\u0BB2\u0BC8.",    tip: "\u0B9A\u0BB0\u0BBF\u0BAF\u0BBE\u0BA9 complexity. Built-in functions-\u0BB2\u0BCD \u0BAE\u0BB1\u0BC8\u0B95\u0BCD\u0B95\u0BAA\u0BCD\u0BAA\u0B9F\u0BCD\u0B9F O(n) \u0BB5\u0BC7\u0BB2\u0BC8 \u0B87\u0BB2\u0BCD\u0BB2\u0BC8 \u0B8E\u0BA9\u0BCD\u0BB1\u0BC1 \u0B89\u0BB1\u0BC1\u0BA4\u0BBF\u0BAA\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BB5\u0BC1\u0BAE\u0BCD." }
+      }
+    }
+  };
+
+  var currentLang = "en";
+  var interviewVisible = false;
+  var currentComplexity = "on";
+  var myChart = null;
+
+  // ── Build Chart ───────────────────────────────────────────────
+  function buildChart() {
+    var canvas = document.getElementById("complexityChart");
+    if (!canvas) return;
+    var ctx2 = canvas.getContext("2d");
+    var ns = [];
+    for (var i = 1; i <= 20; i++) ns.push(i);
+
+    myChart = new Chart(ctx2, {
+      type: "line",
+      data: {
+        labels: ns,
+        datasets: [
+          { label: "O(1)",     data: ns.map(function(){ return 1; }),             borderColor: "#00ff88", borderWidth: 3,   pointRadius: 0, tension: 0.4, fill: false },
+          { label: "O(log n)", data: ns.map(function(x){ return Math.log2(x); }), borderColor: "#7c3aed", borderWidth: 3,   pointRadius: 0, tension: 0.4, fill: false },
+          { label: "O(n)",     data: ns.map(function(x){ return x; }),            borderColor: "#00bfff", borderWidth: 3,   pointRadius: 0, tension: 0.4, fill: false },
+          { label: "O(n\u00B2)", data: ns.map(function(x){ return x*x/4; }),      borderColor: "#ff3333", borderWidth: 3,   pointRadius: 0, tension: 0.4, fill: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { color: "#e8e8f0", font: { family: "Space Mono", size: 11 }, boxWidth: 24, padding: 16 } },
+          tooltip: { backgroundColor: "#1a1a24", borderColor: "#2a2a3a", borderWidth: 1, titleColor: "#00ff88", bodyColor: "#e8e8f0", titleFont: { family: "Space Mono" }, bodyFont: { family: "Space Mono", size: 11 } }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#6b6b80", font: { family: "Space Mono", size: 10 } }, title: { display: true, text: "Input Size (n)", color: "#6b6b80", font: { family: "Space Mono", size: 11 } } },
+          y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#6b6b80", font: { family: "Space Mono", size: 10 } }, title: { display: true, text: "Operations", color: "#6b6b80", font: { family: "Space Mono", size: 11 } } }
+        }
+      }
+    });
+  }
+
+  // ── Detect Complexity ─────────────────────────────────────────
+  function detectComplexity(code) {
+    var loopPat    = /\b(for|while|forEach|map|filter|reduce)\b/;
+    var halvingPat = /\/\s*2|>>\s*1|\bMath\.log|\/=\s*2|mid\s*[-+]/;
+    if (halvingPat.test(code) && loopPat.test(code)) return "ologn";
+    var lines = code.split("\n");
+    var depth = 0, maxDepth = 0;
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (loopPat.test(line)) { depth++; if (depth > maxDepth) maxDepth = depth; }
+      var opens  = (line.match(/\{/g) || []).length;
+      var closes = (line.match(/\}/g) || []).length;
+      depth = Math.max(0, depth - Math.max(0, closes - opens));
+    }
+    if (maxDepth === 0) return "o1";
+    if (maxDepth === 1) return "on";
+    return "on2";
+  }
+
+  // ── Show Result ───────────────────────────────────────────────
+  function showResult(complexity) {
+    var panel = document.getElementById("resultPanel");
+    var lang = T[currentLang];
+    if (!complexity) {
+      panel.innerHTML = '<div class="empty-state"><div class="big">&#128269;</div><span>' + lang.emptyMsg + "</span></div>";
+      return;
+    }
+    var data = lang.complexities[complexity];
+    var gradeMap = { o1: 1, ologn: 2, on: 3, on2: 5 };
+    var g = gradeMap[complexity];
+    var boxes = "";
+    for (var i = 0; i < 5; i++) {
+      var cls = "grade-box";
+      if (i < g) cls += (i < 2) ? " on" : (i < 4) ? " warn" : " bad";
+      boxes += '<div class="' + cls + '"></div>';
+    }
+    panel.innerHTML =
+      '<div class="complexity-badge">' + data.label + "</div>" +
+      '<div class="complexity-grade">' + boxes + "</div><br>" +
+      '<div class="analysis-section"><div class="section-label">' + lang.explainLabel + '</div><div class="section-content">' + data.explain + "</div></div>" +
+      '<div class="analysis-section"><div class="section-label">' + lang.tipLabel + '</div><div class="section-content tip-content">' + data.tip + "</div></div>";
+  }
+
+  // ── Highlight Chart ───────────────────────────────────────────
+  function highlightChart(complexity) {
+    if (!myChart) return;
+    var map = { o1: 0, ologn: 1, on: 2, on2: 3 };
+    var hi = map[complexity];
+    myChart.data.datasets.forEach(function(ds, i) {
+      ds.borderWidth = (i === hi) ? 6 : 1.5;
+      ds.borderDash  = (i === hi) ? [] : [5, 5];
+    });
+    myChart.update();
+  }
+
+  // ── Analyze ───────────────────────────────────────────────────
+  function analyzeCode() {
+    var code = document.getElementById("codeInput").value.trim();
+    var analyzing = document.getElementById("analyzing");
+    document.getElementById("analyzingText").textContent = T[currentLang].analyzing;
+    if (!code) { showResult(null); return; }
+    analyzing.classList.add("show");
+    setTimeout(function() {
+      analyzing.classList.remove("show");
+      var c = detectComplexity(code);
+      currentComplexity = c;
+      showResult(c);
+      highlightChart(c);
+      if (interviewVisible) renderQuestions();
+    }, 900);
+  }
+
+  // ── Language ──────────────────────────────────────────────────
+  function setLang(lang) {
+    currentLang = lang;
+    document.getElementById("btnEN").classList.toggle("active", lang === "en");
+    document.getElementById("btnTA").classList.toggle("active", lang === "ta");
+    document.getElementById("langHint").textContent = T[lang].langHint;
+    document.getElementById("interviewIntro").textContent = T[lang].interviewIntro;
+    document.getElementById("interviewBtn").textContent = interviewVisible ? T[lang].hideQ : T[lang].showQ;
+    if (document.querySelector(".complexity-badge")) {
+      showResult(currentComplexity);
+    } else {
+      document.getElementById("resultPanel").innerHTML =
+        '<div class="empty-state"><div class="big">&#128269;</div><span>' + T[lang].emptyMsg + "</span></div>";
+    }
+    if (interviewVisible) renderQuestions();
+  }
+
+  // ── Interview ─────────────────────────────────────────────────
+  function renderQuestions() {
+    var qs = T[currentLang].questions[currentComplexity] || T[currentLang].questions.on;
+    var list = document.getElementById("questionsList");
+    list.innerHTML = qs.map(function(q, i) {
+      return '<div class="question-card">' +
+        '<div class="question-num">Q' + (i + 1) + " / COMPLEXITY INTERVIEW</div>" +
+        "<strong>" + q.q + "</strong>" +
+        '<div style="margin-top:8px;color:var(--muted);font-size:13px;">&#128161; ' + q.a + "</div>" +
+        "</div>";
+    }).join("");
+  }
+
+  function toggleInterview() {
+    interviewVisible = !interviewVisible;
+    var list  = document.getElementById("questionsList");
+    var intro = document.getElementById("interviewIntro");
+    var btn   = document.getElementById("interviewBtn");
+    if (interviewVisible) {
+      list.classList.add("visible");
+      intro.style.display = "none";
+      btn.textContent = T[currentLang].hideQ;
+      renderQuestions();
+    } else {
+      list.classList.remove("visible");
+      intro.style.display = "block";
+      btn.textContent = T[currentLang].showQ;
+    }
+  }
+
+  // ── Wire Up Events ────────────────────────────────────────────
+  document.getElementById("analyzeBtn").addEventListener("click", analyzeCode);
+  document.getElementById("btnEN").addEventListener("click", function() { setLang("en"); });
+  document.getElementById("btnTA").addEventListener("click", function() { setLang("ta"); });
+  document.getElementById("interviewBtn").addEventListener("click", toggleInterview);
+  document.getElementById("codeInput").addEventListener("keydown", function(e) {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      var s = this.selectionStart;
+      this.value = this.value.substring(0, s) + "  " + this.value.substring(this.selectionEnd);
+      this.selectionStart = this.selectionEnd = s + 2;
+    }
+  });
+
+  // Build chart after everything is ready
+  buildChart();
+
+})();
+</script>
+</body>
+</html>
