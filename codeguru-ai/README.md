@@ -1,113 +1,96 @@
-# CodeGuru AI - AI Code Tutor for Indian Students
+# CodeGuru AI IN
 
-An intelligent code tutoring platform powered by Google Gemini AI, designed specifically for Indian students learning programming.
+CodeGuru AI IN is an interactive algorithm learning and interview-prep platform.
+It analyzes user code with Groq LLMs, detects algorithm style, and shows visual animations for sorting, tree traversal, recursion, and dynamic programming.
 
-## 🚀 Tech Stack
+## Production
 
-- **Frontend**: React 18 + Vite
-- **AI**: Google Gemini API (FREE tier)
-- **Styling**: TailwindCSS + Framer Motion
-- **Code Editor**: Monaco Editor
-- **Charts**: Recharts
-- **Icons**: React Icons
-- **Deployment**: Vercel (FREE)
+- Primary URL: `https://codeguru-ai.vercel.app`
+- Deployment URL: `https://codeguru-1q9eu75cj-harines-projects-4603449d.vercel.app`
 
-## 📦 Installation
+## Key Features
 
-All dependencies are already installed! Here's what was set up:
+- AI-powered code analysis with beginner-friendly explanations
+- Automatic algorithm detection from code + pattern heuristics
+- Complexity analysis:
+- Best / Average / Worst time complexity
+- Space complexity
+- Bottleneck identification with reasoning
+- Optimization suggestions with improved code and trade-offs
+- Interview practice mode:
+- AI-generated interview questions
+- Answer evaluation with score and feedback
+- Multi-language explanation support (language selector driven)
+- Visualization modes:
+- Sorting animation
+- Tree traversal visualization
+- Recursion call-tree visualization
+- Dynamic programming table visualization
+- Fullscreen animation mode for clearer step-by-step understanding
+
+## Tech Stack
+
+- Frontend: React + Vite
+- Styling/UI: Tailwind CSS + custom CSS + Framer Motion
+- Code Editor: Monaco Editor (`@monaco-editor/react`)
+- AI Provider: Groq (`groq-sdk`)
+- Charts/Visualization: Recharts + custom SVG visualizers
+- Icons: React Icons
+- Deployment: Vercel
+
+## Project Structure
+
+```text
+src/
+	components/
+		analysis/
+		interview/
+		shared/
+		visualization/
+	hooks/
+	utils/
+	App.jsx
+```
+
+## Environment Variables
+
+Create `.env` in `codeguru-ai/`:
 
 ```bash
-# Core dependencies
-- @google/generative-ai
-- @monaco-editor/react
-- recharts
-- react-icons
-- framer-motion
-- tailwindcss
-```
-
-## 🔧 Setup
-
-### 1. Get your FREE Gemini API Key
-
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click "Create API Key"
-4. Copy your API key
-
-### 2. Configure Environment Variables
-
-Create a `.env` file in the root directory:
-
-```bash
-cp .env.example .env
-```
-
-Then edit `.env` and add your Groq API key:
-
-```
-VITE_GROQ_API_KEY=your_actual_api_key_here
-# Optional model override
+VITE_GROQ_API_KEY=your_groq_api_key
+# Optional
 VITE_GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
-### 3. Start Development Server
+## Run Locally
 
 ```bash
+npm install
 npm run dev
 ```
 
-Your app will be available at `http://localhost:5173`
+Open the local URL shown by Vite (typically `http://localhost:5173` or next available port).
 
-## 📁 Project Structure
-
-```
-src/
-├── components/
-│   ├── analysis/        # Code analysis components
-│   ├── interview/       # Interview prep components
-│   ├── visualization/   # Charts and data viz
-│   └── shared/          # Reusable UI components
-├── utils/               # Helper functions
-├── hooks/               # Custom React hooks
-└── App.jsx             # Main app component
-```
-
-## 🎯 Features to Build
-
-- **Code Analysis**: AI-powered code review and suggestions
-- **Interview Prep**: Practice coding problems with AI guidance
-- **Progress Tracking**: Visualize learning progress with charts
-- **Real-time Feedback**: Instant code evaluation
-- **Indian Context**: Examples and explanations tailored for Indian students
-
-## 🚀 Deployment
-
-Deploy to Vercel for FREE:
+## Build
 
 ```bash
-# Install Vercel CLI (if not installed)
-npm i -g vercel
-
-# Deploy
-vercel
+npm run build
+npm run preview
 ```
 
-Or connect your GitHub repo to Vercel dashboard for automatic deployments.
+## Deployment (Vercel)
 
-## 📝 Next Steps
+```bash
+npx vercel --prod
+```
 
-1. Set up your Gemini API key
-2. Start building components in the respective folders
-3. Integrate Monaco Editor for code input
-4. Connect Gemini AI for code analysis
-5. Add Recharts for progress visualization
-6. Deploy to Vercel
+Set required env vars in Vercel Project Settings before deploying.
 
-## 🤝 Contributing
+## Notes
 
-Feel free to contribute and make this platform better for Indian students!
+- The app combines LLM detection with deterministic code heuristics for stronger classification reliability.
+- Graph visualization is reserved for a future update.
 
-## 📄 License
+## License
 
-MIT License - feel free to use this for your projects!
+MIT
