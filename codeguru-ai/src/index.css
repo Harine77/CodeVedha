@@ -1,0 +1,488 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(254, 215, 170, 0.35), transparent 35%),
+    radial-gradient(circle at 85% 15%, rgba(191, 219, 254, 0.45), transparent 30%),
+    linear-gradient(160deg, #f8fafc 0%, #eef2ff 50%, #ecfeff 100%);
+  min-height: 100vh;
+}
+
+code,
+pre,
+.font-mono {
+  font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #5568d3 0%, #6b3f8f 100%);
+}
+
+/* ============================================
+   COMPONENT STYLES
+   ============================================ */
+
+@layer components {
+
+  /* Contrast-safe card variants */
+  .card-light {
+    background: #ffffff;
+    color: #111827;
+    font-weight: 600;
+  }
+
+  .card-colored {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .card-gradient {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .label-strong {
+    font-weight: 700;
+  }
+
+  .value-strong {
+    font-weight: 800;
+  }
+  
+  /* HEADER STYLES */
+  .header-gradient {
+    background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(90deg, rgba(255, 153, 51, 0.95) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(19, 136, 8, 0.95) 100%);
+  }
+
+  /* CARD STYLES */
+  .card {
+    @apply bg-white rounded-xl shadow-card p-6 transition-all duration-300;
+  }
+  
+  .card-hover {
+    @apply card hover:shadow-card-hover hover:-translate-y-1 cursor-pointer;
+  }
+  
+  .card-glass {
+    @apply bg-white/80 backdrop-blur-lg rounded-xl shadow-card p-6 border border-white/20;
+  }
+
+  /* BUTTON STYLES */
+  .btn {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-secondary {
+    @apply btn border-2 border-purple-600 text-purple-600 bg-transparent hover:bg-purple-50;
+  }
+  
+  .btn-success {
+    @apply btn bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-glow-green;
+  }
+  
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 shadow-lg;
+  }
+  
+  .btn-outline {
+    @apply btn border-2 border-gray-300 text-gray-700 bg-white hover:border-gray-400 hover:bg-gray-50;
+  }
+
+  /* BADGE STYLES */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide;
+  }
+  
+  .badge-excellent {
+    @apply badge bg-green-100 text-green-800 border border-green-300;
+  }
+  
+  .badge-good {
+    @apply badge bg-yellow-100 text-yellow-800 border border-yellow-300;
+  }
+  
+  .badge-poor {
+    @apply badge bg-orange-100 text-orange-800 border border-orange-300;
+  }
+  
+  .badge-terrible {
+    @apply badge bg-red-100 text-red-800 border border-red-300;
+  }
+
+  /* COMPLEXITY BADGES */
+  .complexity-o1 {
+    @apply badge-excellent;
+  }
+  
+  .complexity-ologn {
+    @apply badge-excellent;
+  }
+  
+  .complexity-on {
+    @apply badge-good;
+  }
+  
+  .complexity-onlogn {
+    @apply badge-good;
+  }
+  
+  .complexity-on2 {
+    @apply badge-poor;
+  }
+  
+  .complexity-o2n {
+    @apply badge-terrible;
+  }
+
+  /* INPUT STYLES */
+  .input {
+    @apply px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all;
+  }
+  
+  .textarea {
+    @apply input w-full min-h-[120px] resize-y font-mono text-sm;
+  }
+  
+  .select {
+    @apply input cursor-pointer bg-white;
+  }
+
+  /* LOADING STATES */
+  .skeleton {
+    @apply bg-gray-200 rounded animate-pulse;
+  }
+  
+  .skeleton-text {
+    @apply skeleton h-4 w-full mb-2;
+  }
+  
+  .skeleton-title {
+    @apply skeleton h-6 w-3/4 mb-4;
+  }
+  
+  .spinner {
+    @apply inline-block w-6 h-6 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin;
+  }
+  
+  .spinner-lg {
+    @apply spinner w-12 h-12;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    @apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out;
+  }
+
+  /* TAB STYLES */
+  .tab {
+    @apply px-6 py-3 rounded-md font-semibold transition-all duration-200 cursor-pointer;
+  }
+  
+  .tab-active {
+    @apply tab bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg;
+  }
+  
+  .tab-inactive {
+    @apply tab text-gray-600 hover:bg-gray-100;
+  }
+
+  /* ALERT STYLES */
+  .alert {
+    @apply p-4 rounded-lg border-l-4 mb-4;
+  }
+  
+  .alert-success {
+    @apply alert bg-green-50 border-green-500 text-green-800;
+  }
+  
+  .alert-warning {
+    @apply alert bg-yellow-50 border-yellow-500 text-yellow-800;
+  }
+  
+  .alert-danger {
+    @apply alert bg-red-50 border-red-500 text-red-800;
+  }
+  
+  .alert-info {
+    @apply alert bg-blue-50 border-blue-500 text-blue-800;
+  }
+
+  /* CODE BLOCK STYLES */
+  .code-block {
+    @apply bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto;
+  }
+  
+  .inline-code {
+    @apply bg-gray-100 text-purple-600 px-2 py-1 rounded font-mono text-sm;
+  }
+}
+
+/* ============================================
+   UTILITY STYLES
+   ============================================ */
+
+@layer utilities {
+  
+  /* ANIMATION UTILITIES */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+  
+  .animate-count-up {
+    animation: countUp 1.5s ease-out;
+  }
+
+  /* GRADIENT BACKGROUNDS */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .bg-gradient-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+  
+  .bg-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  }
+  
+  .bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+  
+  .bg-gradient-india {
+    background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+  }
+
+  /* TEXT GRADIENTS */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600;
+  }
+  
+  .text-gradient-success {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-600;
+  }
+
+  /* GLASSMORPHISM */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* HOVER EFFECTS */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-2;
+  }
+  
+  .hover-glow {
+    @apply transition-shadow duration-300 hover:shadow-glow;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  /* RESPONSIVE TEXT */
+  .text-responsive {
+    @apply text-sm md:text-base lg:text-lg;
+  }
+  
+  .heading-responsive {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+}
+
+/* ============================================
+   KEYFRAME ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes countUp {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+/* Mobile (default) */
+@media (max-width: 640px) {
+  .card {
+    @apply p-4;
+  }
+  
+  .btn {
+    @apply px-4 py-2 text-sm;
+  }
+  
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .card {
+    @apply p-5;
+  }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1025px) {
+  .card {
+    @apply p-6;
+  }
+  
+  .container {
+    @apply max-w-7xl mx-auto;
+  }
+}
+
+/* ============================================
+   MONACO EDITOR OVERRIDES
+   ============================================ */
+
+.monaco-editor {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.monaco-editor .margin {
+  background-color: #f8fafc !important;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb;
+  }
+}
