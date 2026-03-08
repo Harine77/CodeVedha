@@ -1,36 +1,77 @@
-# CodeVedha
+# Project Title
+CodeVedha
 
-Welcome to CodeVedha!
+## Description
+CodeVedha is an innovative platform designed to enhance coding skills through interactive code analysis, interview preparation, and analytics. Check out our live demo [here](https://codeguru-ai.vercel.app/).
 
-CodeVedha is a comprehensive documentation platform designed to help users navigate and utilize the features of the project effectively.
+## Key Features
+- **Code Analysis**: Analyze your code to identify improvements and optimizations.
+- **Interview Preparation**: Get ready for coding interviews with targeted practice questions and solutions.
+- **Analytics**: Access insightful analytics on your coding performance to monitor progress.
+- **UI Details**: User-friendly interface designed for ease of use and navigation.
 
-## Live Deployment
+## Tech Stack
+- JavaScript
+- React
+- Node.js
+- Express
+- MongoDB
 
-Visit our live deployment at: [Vercel Deployment](https://codeguru-ai.vercel.app/)
+## Installation and Setup Instructions
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Harine77/CodeVedha.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd CodeVedha
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm start
+   ```
 
-## Features
-- Feature 1: Description
-- Feature 2: Description
-- Feature 3: Description
+## Project Structure
+```
+CodeVedha/
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── ...
+├── backend/
+│   ├── models/
+│   ├── routes/
+│   └── ...
+├── README.md
+└── package.json
+```
 
-## Installation
-To install CodeVedha, follow these steps:
-1. Step 1: Description
-2. Step 2: Description
+## Deployment
+To deploy the project, you can use platforms like Vercel for frontend and Heroku for backend. Make sure to set environment variables accordingly.
 
-## Usage
-After installation, you can start using CodeVedha by following these guidelines:
-- Usage instruction 1
-- Usage instruction 2
+## Contributing Guidelines
+We welcome contributions from everyone! Please follow these steps:
+1. Fork the repository.
+2. Create a new branch:
+   ```bash
+   git checkout -b feature/YourFeature
+   ```
+3. Make your changes and commit them:
+   ```bash
+   git commit -m "Add some feature"
+   ```
+4. Push to the branch:
+   ```bash
+   git push origin feature/YourFeature
+   ```
+5. Open a Pull Request.
 
-## Contributing
-We welcome contributions! Please follow the steps outlined in our contribution guidelines.
+## Support and Troubleshooting
+If you encounter any issues, please check the [FAQ](link-to-faq) or open an issue in the repository for assistance.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-For any inquiries, reach out to us at [email@example.com].
-
-## Date Created
-This README was created on 2026-03-08 18:13:07 UTC.
